@@ -1,0 +1,16 @@
+# Importe funciones desde archivo sudoku.py
+
+# Importe otros paquetes o modulos que pueda necesitar
+
+# Inicializar variables del juego
+
+# Imprima en consola el mensaje de bienvenida
+
+# Seleccione el tablero inicial desde las 5 plantillas
+
+# Imprima el tablero inicial
+
+# Loop principal del juego
+while True:
+	
+	# Implemente la lógica y funcionamiento del juego aquí

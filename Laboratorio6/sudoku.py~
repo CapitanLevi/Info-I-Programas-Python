@@ -1,0 +1,188 @@
+from random import randint
+from termcolor import colored
+#from copy import deepcopy
+Letras = ('a','b','c','d','e','f','g','h','i')
+
+def printIntro(fileName): #Funciona
+	'''
+	Imprime el contenido de un archivo en pantalla. El archivo contiene
+	un mensaje de bienvenida del juego.		
+	Entradas y salidas:
+		- inputs: string que contiene el nombre del archivo
+		- returns: ninguno, solo imprime el archivo leído en pantalla	
+	'''
+	file = open('/home/camilo/workspace/Laboratorio 6/'+fileName+'.txt')
+	print(file.read())
+	file.close()
+
+def getRandomSudoku(n_sud): #Funciona
+	'''
+	Selecciona aleatoriamente uno de los archivos para cargarlo como juego 
+	inicial en un arreglo 2D.		
+	Entradas y salidas:
+		- inputs: int con el número de sudokus disponibles
+		- return: list de dos dimensiones (9x9) conteniendo el sudoku	
+	'''
+	n = randint(1,n_sud)
+	file = open('/home/camilo/workspace/Laboratorio 6/sd'+str(n)+'.txt')
+	M = list(file)
+	for i in range(9):
+		M[i] = M[i].strip() #Elimina espacios en blanco y nuevas líneas al inicio y final
+		M[i] = M[i].split(',')
+	return M
+
+# L = getRandomSudoku(5)
+#Copy = deepcopy(L)
+
+def printSudoku(M, C): #Funciona
+	'''
+	Imprime en pantalla el Sudoku de forma amigable para el usuario.
+	Se utiliza la función "colored" de la librería "termcolor" para imprimir las
+	pistas con un color distintivo.
+	Entradas y salidas:
+		- inputs: list de 9x9 conteniendo el sudoku, copia del sudoku con las pistas
+		- return: nada	
+	'''
+	print('   1 2 3 4 5 6 7 8 9')
+	print('  -------------------')
+	
+	for i in range(9):
+		print(Letras[i]+' |', end='')
+	
+		for j in range(9):
+			if C[i][j] == '0':
+				if M[i][j] != '0':
+					if j == 8:
+						print(M[i][j]+'|')
+					elif j == 2 or j == 5:
+						print(M[i][j]+'|', end='')
+					else:
+						print (M[i][j],end=' ')
+				elif M[i][j] == '0':
+					if j == 8:
+						print(' '+'|')
+					elif j == 2 or j == 5:
+						print(' '+'|', end='')
+					else:
+						print (' ',end=' ')
+			else:
+				# Impresión de las pistas.
+				if j == 8:
+					print(colored(C[i][j], color='magenta', attrs=['bold'])+'|')
+				elif j == 2 or j == 5:
+					print(colored(C[i][j], color='magenta', attrs=['bold'])+'|', end='')
+				else:
+					print (colored(C[i][j], color='magenta', attrs=['bold']),end=' ')
+		
+		if i == 2 or i == 5:
+			print('  -------------------')
+	else:
+		print('  -------------------')
+
+#printSudoku(L)
+
+def validCoord(coord, C): #Funciona
+	'''
+	Verifica si la coordenada ingresada existe, su sintáxis es válida y si es una pista o no.
+	Entiéndase Pista como un número dado por defecto en el sudoku.	
+	Entradas y salidas:
+		- inputs: string que contiene la coordenada y lista inmutable con las pistas.
+		- return: True si la coordenada es válida, False en caso contrario	
+	Ejemplo: coord = 'e4 8'
+	'''
+	
+	try:
+		if (len(coord) != 4) or (coord[2] != ' ') or (coord[0] not in Letras) or (int(coord[1]) not in range(1,10)) or (int(coord[3]) not in range(1,10)):
+			return False # Puede presentar ValueError en int(coord[1]) o int(coord[3] si coord[1] y/o coord[3] no es un número
+		elif C[Letras.index(coord[0])][int(coord[1])-1] != '0':
+			print('La casilla',coord[:2],'es una pista.')
+			return False
+		else:
+			return True
+	except ValueError:
+		return False
+
+def validClear(command, M, C): # Funciona
+	'''
+	Verifica si la entrada del usuario corresponde a un comando tipo "clear g5" y lo ejecuta.
+	Entradas y salidas:
+		- inputs: string que contiene el comando, lista con el sudoku y copia.
+		- return: acción en respuesta al comando o False si la entrada es inválida.
+	Ejemplo: command = 'clear b7'.
+	'''
+	try:
+		if (command[6] in Letras) and (int(command[7]) in range(1,10)): # Puede presentar error si el string command[7] no es un número: ValueError en int(command[7])
+			if C[Letras.index(command[6])][int(command[7])-1] == '0': # Búsqueda de pista en Copy
+				M[Letras.index(command[6])][int(command[7])-1] = '0' # Ejecución del comando (1)
+				return M
+			elif C[Letras.index(command[6])][int(command[7])-1] != '0': # Búsqueda de pista en Copy
+				print('La casilla',command[6:8],'es una pista.')
+				return False
+		if command[6] not in Letras:
+			print(command[6],'no es una columna del sudoku.')
+		if int(command[7]) not in range(1,10):
+			print(command[7],'no es un número entre 1 y 9.')
+		return False
+	except ValueError:
+		print(command[7],'no es un número.')
+		return False
+
+
+def checkFil(fil, dat, M): # Funciona
+	'''
+	Verifica si en la fila especificada ya existe el número que se quiere ingresar.
+	Entradas y salidas:
+		- inputs: int fila, str número y list que contiene el sudoku
+		- return: True si es posible ingresar el valor, False en caso contrario	
+	'''
+	if dat in M[fil]:
+		return False
+	elif dat not in M[fil]:
+		return True
+
+def checkCol(col, dat, M): # Funciona
+	'''
+	Verifica si en la columna especificada ya existe el número que se quiere ingresar.		
+	Entradas y salidas:
+		- inputs: int columna, str dato y list que contiene el sudoku
+		- return: True si es posible ingresar el valor, False en caso contrario	
+	'''
+	for fil in M:
+		if dat == fil[col]:
+			return False
+	else:
+		return True
+
+def checkBloque(fil, col, dat, M): # Funciona
+	'''
+	Verifica si en el bloque al que pertenece la coordenada [fil,col] ya existe el número 
+	que se quiere ingresar.
+		- inputs: int fila, int columna, str dato y list que contiene el sudoku
+		- return: True si es posible ingresar el valor, False en caso contrario	
+	'''
+	Gr1 = (0,1,2)
+	Gr2 = (3,4,5)
+	Gr3 = (6,7,8)
+	Grs = (Gr1,Gr2,Gr3)
+	for m in Grs:
+		if fil in m:
+			break
+	for n in Grs:
+		if col in n:
+			break
+	for i in m:
+		for j in n:
+			if M[i][j] == dat:
+				return False
+	else:
+		return True
+
+def Completado(M):
+	'''Retorna True si el sudoku está completado. False de lo contrario
+		- input: Lista modificable'''
+	for i in range(len(M)):
+		if '0' in M[i]:
+			return False
+	else:
+		return True
+	
